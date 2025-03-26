@@ -1,0 +1,110 @@
+/* Form.css */
+
+.form-wrapper-horizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.form-container-horizontal {
+  margin: 0 auto;
+  /* padding: 20px; */
+  border-radius: 8px;
+}
+
+.progress-bar-horizontal {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.bullet {
+  width: 12px;
+  height: 12px;
+  background-color: #bbb9b9;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 0px;
+  box-shadow: 0px 0px 2px 5px #8888883d;
+}
+
+.bullet-line {
+  flex: 1;
+  height: 2px;
+  background-color: #ddd;
+}
+
+.active-bullet {
+  background-color: #4caf50; /* Active bullet color */
+  box-shadow: 0px 0px 2px 5px #97c592ab;
+}
+.active-bullet-line {
+  background-color: #4caf50; /* Change this color to your desired active color */
+}
+.form-content-horizontal {
+  margin-bottom: 20px;
+  text-align: center;
+  margin-top: -20px;
+  font-weight: 800;
+}
+
+.form-buttons-horizontal {
+  display: flex;
+  justify-content: space-between;
+}
+
+.prev,
+.next,
+.submit {
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  background-color: #3498db;
+  color: #fff;
+  border-radius: 4px;
+  outline: none;
+}
+
+.prev:hover,
+.next:hover,
+.submit:hover {
+  background-color: #217dbb;
+}
+
+.arrow-icon{
+    border: 1px solid #000;
+    height: 20px;
+    width: 20px;
+    text-align: center;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: bolder;
+}
+.bg-form{
+  background-color: #ffffff;
+  box-shadow: 0px 3px 20px 0px rgba(0,0,0,.14);
+  margin: 20px auto;
+}
+.bg-form .heading-p{
+  color: #6A6C7B;
+  font-size: 12px;
+  text-align: start;
+}
+.mob-phn-inp .react-tel-input .form-control {
+  height: 40px !important ;
+  margin-left: 0px ;
+  width: 300px !important;
+}
+
+ .inputform-custom {
+    height: 40px !important; 
+    width: 300px !important;
+    border: none;
+    background: #f4f6f9;
+}
+.inputform-custom::placeholder {
+  font-size: 14px; 
+  text-transform: capitalize;
+}

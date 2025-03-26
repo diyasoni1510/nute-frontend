@@ -1,0 +1,24 @@
+.tale-body input{
+    border: none !important;
+    background: #e6e8ee6e !important;
+    border-radius: 5px;
+}
+tr:first-child > th:first-child {
+    border-radius: 0.5rem 0px 0px 0.5rem;
+}
+tr:first-child > th:last-child {
+    border-radius: 0px 0.5rem 0.5rem 0px;
+}
+.tale-body select {
+    border: none;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+}
+.inputslct{
+    border: none !important;
+    background: #e6e8ee6e !important;
+    border-bottom-right-radius: 5px !important;
+    border-top-right-radius: 5px !important;
+    border-bottom-left-radius: 0px !important;
+    border-top-left-radius: 0px !important;
+}

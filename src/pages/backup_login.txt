@@ -1,0 +1,563 @@
+import React, { useState, useRef, useEffect } from "react";
+import QRCode from "qrcode.react";
+import PhoneInput from "react-phone-input-2";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser, verifyOTP } from "./utils/api_functions";
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isOTPSent, setIsOTPSent] = useState(false);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const inputRefs = useRef([]);
+  const navigate = useNavigate()
+  const [phone, setPhone] = useState("");
+  let login = localStorage.getItem("islogin");
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showButton, setShowButton] = useState(true);
+  let grey = "#D9D9D9";
+  const [bgColor, setBgColor] = useState(grey);
+  const [opacity, setopacity] = useState(0.5);
+  const [imageSrc, setImageSrc] = useState("/images/nute-swap.png");
+  const [displayText, setDisplayText] = useState("Introducing Nute Payments!");
+  const [displayTextto, setDisplayTextto] = useState(
+    "Nute Pay Your one-stop solution for bill payments, recharges, bookings, and more. Manage it all effortlessly on our platform."
+  );
+  const qrCodeContents = "https://nadcab.com";
+  const toggleButton = () => {
+    setShowButton(!showButton);
+    let removebg = "";
+    setBgColor(removebg);
+    setopacity("");
+    setImageSrc("/images/tablet-1.png");
+    setDisplayText("Now Pay Your Aii payment Bills Through Crypto");
+    setDisplayTextto(
+      "With nute ,pay all your bills through Crypto has never been easier - a seamless and secure way to manage your finances in the digital age."
+    );
+  };
+
+  const validateLogin = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrorMessage('Invalid email address');
+      return;
+    }
+
+    const passwordRegex = /^(?=.*\d)(?=.*[A-Z]).{6,}$/;
+    if (!passwordRegex.test(password)) {
+      setErrorMessage('Password must contain at least one number, one uppercase letter, and be at least 6 characters');
+      return;
+    }
+    loginUser(email, phone, password)
+    .then((res)=>{
+      if(res.status==200) {
+        localStorage.setItem("nute-token", res.token);
+        localStorage.setItem("islogin", true);
+        navigate("../", { replace: true });
+      } else if(res.status == 300) {
+        setIsOTPSent(true);
+        setErrorMessage("varification code sent successful, Please check Your Email")
+      } else {
+        setErrorMessage(res.message)
+      }
+    })
+  };
+  
+
+  useEffect(() => {
+    if (login) {
+      navigate("../", { replace: true });
+    }
+  }, [login]);
+
+
+  const handleInputChange = (event, index) => {
+    const inputValue = event.target.value;
+    
+   
+    if (!isNaN(inputValue) && inputValue.length <= 1) {
+      setOtp((prevOtp) => {
+        const newOtp = [...prevOtp];
+        newOtp[index] = inputValue;
+        return newOtp;
+      });
+      // Focus on the next input if a digit is entered
+      if (inputValue !== "" && index < 5) {
+        inputRefs.current[index + 1].focus();
+      }
+    }
+
+    // Perform your verification logic here if needed
+    if (index + 1 === 6) {
+      const fullOtp = otp.join('');
+      let nOtp = fullOtp+inputValue;
+      verifyUserOtp(nOtp);
+    }
+  };
+
+  const handleInputKeyDown = (event, index) => {
+    // Handle backspace to focus on the previous input
+    if (event.key === "Backspace" && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
+
+  const otp_send = () =>{ 
+    if(phone) {
+      console.log("phone", phone)
+    }
+
+  }
+  const verifyUserOtp = (otp) =>{
+    verifyOTP(email, phone, otp)
+    .then((res)=>{
+      if(res.status==200) {
+        localStorage.setItem("nute-token", res.token);
+        localStorage.setItem("islogin", true);
+        navigate("../", { replace: true });
+      }
+    })
+  }
+
+  const handlePhoneChange = (value, country, e, formattedValue) => {
+    setPhone(formattedValue);
+  };
+
+
+  useEffect(() => {
+    // Add a class to the body when the component mounts
+    document.body.classList.add("my-page-background");
+
+    // Remove the class when the component unmounts
+    return () => {
+      document.body.classList.remove("my-page-background");
+    };
+  }, []);
+
+  return (
+    <>
+    
+    <div className="container">
+      <div className="loginform">
+        <div className="loginheading d-flex  gap-3 align-items-baseline">
+          <div>
+            <p>Facing Any Issue ?</p>
+          </div>
+          <div>
+            <button type="button" class="btn btn-outline-success">
+              Contact Us
+            </button>
+          </div>
+        </div>
+        <div style={{ margin: "100px auto" }}>
+          <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link active loginform_button "
+                id="pills-home-tab"
+                data-bs-toggle="pill"
+                data-bs-target="#pills-home"
+                type="button"
+                role="tab"
+                aria-controls="pills-home"
+                aria-selected="true"
+              >
+                Login
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link loginform_button"
+                id="pills-profile-tab"
+                data-bs-toggle="pill"
+                data-bs-target="#pills-profile"
+                type="button"
+                role="tab"
+                aria-controls="pills-profile"
+                aria-selected="false"
+              >
+                Mobile
+              </button>
+            </li>
+          </ul>
+          <div class="tab-content" id="pills-tabContent">
+            <div
+              class="tab-pane fade show active"
+              id="pills-home"
+              role="tabpanel"
+              aria-labelledby="pills-home-tab"
+            >
+              <div className="">
+              {isOTPSent?
+                  <div className="row">
+                  <div className="col-lg-6 col-md-6 col-sm-12">
+                    <div className="lg_form">
+                    <label htmlFor="" className="form-label fs-5 mt-3">
+                        OTP
+                      </label>
+                      <div className="otp-input-container">
+                        {otp.map((digit, index) => (
+                          <input
+                            key={index}
+                            type="text"
+                            className="otp-input"
+                            value={digit}
+                            onChange={(event) => handleInputChange(event, index)}
+                            onKeyDown={(event) => handleInputKeyDown(event, index)}
+                            maxLength={1}
+                            ref={(inputRef) =>
+                              (inputRefs.current[index] = inputRef)
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>:
+                <div className="row">
+                  <div className="col-lg-5 col-md-6 col-sm-12">
+                    <div className="lg_form">
+                        <div class="mb-3">
+                          <label for="exampleInputEmail1" class="form-label">
+                            Register Email address
+                          </label>
+                         
+                          <input
+                            class="form-control"
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="user@business.com"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label for="exampleInputPassword1" class="form-label">
+                            Password
+                          </label>
+                          <input
+                            class="form-control"
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            placeholder="***********"
+                          />
+                        </div>
+                        <div className="d-grid">
+                          <label
+                            for="exampleInputPassword1"
+                            class="form-label text-danger"
+                          >
+                            Forgot Password ?
+                          </label>
+                          <p
+                            id="error-message"
+                            style={{
+                              color: errorMessage.includes("successful")
+                                ? "green"
+                                : "red",
+                            }}
+                          >
+                            {errorMessage}
+                          </p>
+                          <button
+                            type="submit"
+                            class="btn btn-lg fw-bold bgcolor text-dark fs-4"
+                            onClick={validateLogin}
+                          >
+                            Login
+                          </button>
+
+                          <p style={{ margin: "10px auto" }}>Or</p>
+                          <button
+                            type="button"
+                            class="btn btn-outline-dark googlebtn mb-1 fw-bold"
+                          >
+                            <span>
+                              
+                              <i class="fa-brands fa-apple text-dark"  style={{ fontSize: "25px" }}></i>
+                            </span>{" "}
+                            Continue in With Apple
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-outline-dark googlebtn mb-1 fw-bold"
+                          >
+                            <span>
+                              <img
+                                src="images/google.png"
+                                alt=""
+                                style={{ width: "25px" }}
+                              />
+                            </span>{" "}
+                            Continue in With Google
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-outline-dark googlebtn fw-bold"
+                          >
+                            <span>
+                            <i class="fa-brands fa-facebook text-primary" style={{ fontSize: "25px" }}></i>
+                            </span>{" "}
+                            Continue in With Facebook
+                          </button>
+                          <div className="text-center mt-2 accounttest">
+                            <span className="text-muted"> Don't have account? </span>
+                            <Link className="text-success" to="/CreateAccount">
+                              Sign up now
+                            </Link>
+                          </div>
+                          <div className=" accounttest2">
+                            <div className="acc-name">Create New Account</div>
+                            <Link className="text-success" to="/CreateAccount">
+                            <div className="chevron-icon">
+                            <i className="fa-solid fa-chevron-right"></i>
+                            </div>
+                            </Link>
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-7 col-md-6 col-sm-12">
+                    <div>
+                      <div
+                        className="qrdiv"
+                        style={{
+                          position: "relative",
+                          width: "200px",
+                          height: "100%",
+                          left: "2%",
+                        }}
+                      >
+                        {/* <img src="images/vector.png" alt="" className="qrsize"  style={{background: bgColor , opacity }}/> */}
+
+                        <QRCode
+                          value={qrCodeContents}
+                          bgColor="#fff"
+                          fgColor="#000"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            background: bgColor,
+                            opacity,
+                          }}
+                          className="qrsize"
+                        />
+                        <img
+                          src="https://www.nadcab.com/public/images/apple-touch-icon.png"
+                          alt="Icon"
+                          style={{
+                            position: "absolute",
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                            width: "30px",
+                          }}
+                        />
+
+                        <div className="qrbtn">
+                          {showButton && (
+                            <button
+                              className="btn btn-secondary  btn-sm text-dark"
+                              onClick={toggleButton}
+                            >
+                              Get QR Code
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="fw-bold fs-5 qrtxt1">
+                          Login with QR code
+                        </p>
+                        <p className="fs-6 qrtxt2">
+                          Scan this code with{" "}
+                          <span className="text-success ">Nute mobile App</span>{" "}
+                          to log in instantly.
+                        </p>
+                      </div>
+                      <div className=" d-flex gap-2 appdownloaddiv">
+                        <div className="">
+                          <img
+                            src="images/asset-1.png"
+                            className="appdownload"
+                            alt=""
+                          />
+                        </div>
+                        <div className="">
+                          <img
+                            src="images/asset-2.png"
+                            className="appdownload"
+                            alt=""
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>}
+                <div class="side-banner">
+                  <div className="stk">
+                    <img
+                      src="images/stroke.png"
+                      className="change-my-color"
+                      alt=""
+                      style={{ width: "100%" }}
+                    />
+                  </div>
+                  <div className="container mt-5">
+                    <h2 className="fw-bold fs-1">{displayText}</h2>
+                    <p>{displayTextto}</p>
+                    <p className="fw-bold">
+                      For more info <i class="fa-solid fa-arrow-right"></i>
+                    </p>
+
+                    <div className="nutemobil_img">
+                      <img
+                        src={process.env.PUBLIC_URL + imageSrc}
+                        alt="Current Image"
+                        style={{ width: "100%" }}
+                      />
+                      {/* <img src="images/nute-swap.png" alt=""/> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="tab-pane fade"
+              id="pills-profile"
+              role="tabpanel"
+              aria-labelledby="pills-profile-tab"
+            >
+               <div className="">
+               {isOTPSent?
+                  <div className="row">
+                  <div className="col-lg-6 col-md-6 col-sm-12">
+                    <div className="lg_form">
+                    <label htmlFor="" className="form-label fs-5 mt-3">
+                        OTP
+                      </label>
+                      <div className="otp-input-container">
+                        {otp.map((digit, index) => (
+                          <input
+                            key={index}
+                            type="text"
+                            className="otp-input"
+                            value={digit}
+                            onChange={(event) => handleInputChange(event, index)}
+                            onKeyDown={(event) => handleInputKeyDown(event, index)}
+                            maxLength={1}
+                            ref={(inputRef) =>
+                              (inputRefs.current[index] = inputRef)
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>:
+                <div className="row">
+                <div className="col-lg-6 col-md-6 col-sm-12">
+                  <div className="lg_form">
+                      <div className="phone-input-container mb-3">
+                      <label for="exampleInputEmail1" class="form-label fs-4">
+                            Mobile Number
+                          </label>
+                          <div className="signup-phn-inp">
+                          <PhoneInput
+                              country={"in"} // set default country to India
+                              value={phone}
+                              onChange={handlePhoneChange}
+                              inputClass="phone-input" // Add a custom class to the input
+                            
+                            />
+                          </div>
+                      </div>
+                      
+                    
+                      <div className="d-grid">
+                        <p
+                          id="error-message"
+                          style={{
+                            color: errorMessage.includes("successful")
+                              ? "green"
+                              : "red",
+                          }}
+                        >
+                          {errorMessage}
+                        </p>
+                        <div id="recaptcha-container"></div>
+                        <button
+                          type="button"
+                          class="btn btn-lg fw-bold bgcolor text-dark fs-4"
+                          onClick={()=>{
+                            otp_send()
+                          }}
+                        >
+                          SignUp
+                        </button>
+                        <p style={{ margin: "10px auto" }}>Or</p>
+                        <button type="button" 
+                        class="btn btn-outline-dark googlebtn"
+                        >
+                          <span>
+                            <img
+                              src="images/google.png"
+                              alt=""
+                              style={{ width: "25px" }}
+                            />
+                          </span>
+                          Sign in With Google
+                        </button>
+                        <div className="text-center mt-2">
+                          <span className="text-muted"> Already have an account ?  </span>
+                          <Link className="text-success" to="/login">
+                          Log In
+                          </Link>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+              </div>}
+                <div class="side-banner">
+                  <div className="stk">
+                    <img
+                      src="images/stroke.png"
+                      className="change-my-color"
+                      alt=""
+                      style={{ width: "100%" }}
+                    />
+                  </div>
+                  <div className="container mt-5">
+                    <h2 className="fw-bold fs-1">{displayText}</h2>
+                    <p>{displayTextto}</p>
+                    <p className="fw-bold">
+                      For more info <i class="fa-solid fa-arrow-right"></i>
+                    </p>
+
+                    <div className="nutemobil_img">
+                      <img
+                        src={process.env.PUBLIC_URL + imageSrc}
+                        alt="Current Image"
+                        style={{ width: "100%" }}
+                      />
+                      {/* <img src="images/nute-swap.png" alt=""/> */}
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </>
+  );
+};
+
+export default Login;

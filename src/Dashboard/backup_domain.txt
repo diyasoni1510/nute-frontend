@@ -1,0 +1,281 @@
+import React, { useState, useEffect } from "react";
+import "./Domainverification.css";
+import Header from "./Header";
+import { Tooltip } from "react-tooltip";
+import Menuitem from "../components/Menuitem";
+import { getDomainData, updateDomain } from "../pages/utils/api_functions";
+import { NotificationManager } from "react-notifications";
+import usePageMetadata from "../pages/usePageMetadata";
+import { useSelector } from "react-redux";
+const Domainverification = (props) => {
+  usePageMetadata({
+    title: 'Verify Your Domain: Nute Payment Gateway Integration',
+    description: 'Ensure the security and authenticity of your domain for seamless payment gateway integration',
+  });
+  const { token } = useSelector((state) => state.AuthReducer);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [domain_data, setDomainData] = useState();
+  const [formData, setFormData] = useState({
+    domain: "",
+    ownerName: "Nute-Cryptopayement",
+    verificationCode: "",
+  });
+  const [tooltipMessage, setTooltipMessage] = useState("");
+  const [showTooltip1, setShowTooltip1] = useState(false);
+  const [showTooltip2, setShowTooltip2] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    console.log("name", name, value);
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleNext = () => {
+    if(formData.domain!='')
+    setCurrentStep((prevStep) => prevStep + 1);
+  };
+
+  const handlePrev = () => {
+    setCurrentStep((prevStep) => prevStep - 1);
+  };
+
+  const handleSubmit = () => {
+    // You can perform the final submission logic here
+    updateDomain(formData, token)
+    .then((res)=>{
+      if(res.status==200) {
+        NotificationManager.success(res.message);
+      }else {
+        NotificationManager.error(res.message)
+      }
+    })
+  };
+
+  const copyToClipboard = (text, setShowTooltip) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        console.log("Copied");
+        setTooltipMessage("Copied");
+        setShowTooltip(true);
+      })
+      .catch((err) => {
+        console.error("Copy failed", err);
+        setTooltipMessage("Copy failed");
+        setShowTooltip(true);
+      });
+  };
+
+  useEffect(() => {
+    // Hide tooltip after 2 seconds
+    const timeoutId = setTimeout(() => {
+      setShowTooltip1(false);
+      setShowTooltip2(false);
+    }, 2000);
+
+    return () => {
+      // Clear the timeout if the component unmounts
+      clearTimeout(timeoutId);
+    };
+  }, [showTooltip1, showTooltip2]);
+
+
+
+  // function generateUniqueTwoDigitNumber() {
+  //   // Create an array of all possible two-digit numbers
+  //   const allTwoDigitNumbers = Array.from({ length: 90 }, (_, index) => index + 10);
+  
+  //   // Shuffle the array to randomize the order
+  //   const shuffledNumbers = shuffleArray(allTwoDigitNumbers);
+  
+  //   // Return the first element of the shuffled array
+  //   return shuffledNumbers[0];
+  // }
+  
+  // // Function to shuffle an array using the Fisher-Yates algorithm
+  // function shuffleArray(array) {
+  //   for (let i = array.length - 1; i > 0; i--) {
+  //     const j = Math.floor(Math.random() * (i + 1));
+  //     [array[i], array[j]] = [array[j], array[i]];
+  //   }
+  //   return array;
+  // }
+
+
+  useEffect(()=>{
+    getDomainData(token)
+    .then((res)=>{
+      if(res.status==200) {
+        let dt =res.domains_data;
+        if(res.domains_data.status==1) {
+          setDomainData(res.domains_data)
+        } else if (dt.name && dt.value) {
+          const domain = dt.domain;
+          const value = dt.value;
+          setFormData((prevData) => ({
+            ...prevData,
+            ['domain']:domain,
+            ['verificationCode']: value,
+          }));
+        }
+        
+      } else {
+        const value = generateUniqueString();
+        setFormData((prevData) => ({
+          ...prevData,
+          ['verificationCode']: value,
+        }));
+      }
+    })
+  }, []);
+  
+  function generateUniqueString() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let uniqueString = '';
+  
+    for (let i = 0; i < 20; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      uniqueString += characters.charAt(randomIndex);
+    }
+  
+    return uniqueString;
+  }
+
+  return (
+    <>
+      <Header />
+      <div className="d-flex">
+       
+            <Menuitem  />
+      
+          <div className="container-fluid  subdashbordmain">
+            <div className="pagewrapper">
+              <div className="d-flex align-items-baseline gap-2">
+                {/* <i
+                  class="fas fa-wallet"
+                  style={{ color: "green", fontSize: "30px" }}
+                /> */}
+                <h1 className="mt-4 mb-2 fw-bold table-heading">Domain Verification</h1>
+              </div>
+              <p className="fs-6">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ullam, eos? </p>
+              {domain_data && domain_data?
+          
+          <div className="container domain-verification">
+              <p className="">
+              <strong>https://{domain_data.domain}</strong> domain verified
+              </p> 
+          </div>
+        
+          :
+            <div className="container domain-verification">
+              <div className={`form-section ${currentStep === 1 && "active"}`}>
+                <h2> Domain Name</h2>
+                <p className="">
+                  Verify Domain name in which Crypto gateway api will be used.
+                  Enter Domain name without using <strong>www </strong> and{" "}
+                  <strong>http</strong> or <strong>https</strong>
+                </p>
+                <form>
+                  <label htmlFor="domain">Domain</label>
+                  <input
+                    type="text"
+                    id="domain"
+                    name="domain"
+                    value={formData.domain}
+                    onChange={handleInputChange}
+                    placeholder="Domain.com"
+                    required
+                  />
+                </form>
+                <div className=" d-grid gap-2 col-3">
+                  <button
+                    type="button"
+                    class="btn btn-outline-success "
+                    onClick={handleNext}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+
+              <div className={`form-section ${currentStep === 2 && "active"}`}>
+                <p onClick={handlePrev} className="prev text-success">
+                  <i class="fa-solid fa-chevron-left"></i> Change Domain
+                </p>
+                <h2>Domain TXT DNS verification</h2>
+                <p className="">
+                  Log into your domain registrar, go to DNS settings, add a TXT
+                  record by choosing to add a new TXT record. In the provided
+                  fields, enter @ or your domain in the Host field and the
+                  verification code given by the service you're verifying with
+                  in the Value field, save the new TXT record, and it might take
+                  some time (up to 48 hours) for the changes to take effect.
+                </p>
+                <label htmlFor="">Name</label>
+                <div className="content-box">
+                  <div
+                    className="d-flex justify-content-between align-items-center"
+                    id="copyText"
+                    onClick={() => copyToClipboard("Nute-Cryptopayement", setShowTooltip1)}
+                  >
+                    <p className="m-0">Nute-Cryptopayement</p>
+                    <p className="m-0">
+                      <i class="fa-regular fa-copy"></i>
+                    </p>
+                  </div>
+                  {showTooltip1 && (
+                  <div className="tooltip">
+                    {tooltipMessage}
+                  </div>
+                )}
+                 
+                </div>
+                {/* {showTooltip1 && (
+                    <Tooltip id="tooltip1" className="text-success">
+                      {tooltipMessage}
+                    </Tooltip>
+                  )} */}
+                <label htmlFor="">Value</label>
+                <div className="content-box">
+                  <div
+                    className="d-flex justify-content-between align-items-center"
+                    id="copyText2"
+                    onClick={() => copyToClipboard(formData.verificationCode, setShowTooltip2)}
+                  >
+                    <p className="m-0">{formData.verificationCode}</p>
+                    <p className="m-0">
+                      <i class="fa-regular fa-copy"></i>
+                    </p>
+                  </div>
+                  
+                  {showTooltip2 && (
+                  <div className="tooltip">
+                    {tooltipMessage}
+                  </div>
+                )}
+                </div>
+
+                <div className="d-grid gap-2 col-3 pt-1 pb-1">
+                  <button
+                    class="btn btn-outline-success "
+                    onClick={handleSubmit}
+                  >
+                    Validate
+                  </button>
+                </div>
+              </div>
+            </div>
+          
+          }
+            </div>
+          </div> 
+        </div>
+      
+    </>
+  );
+};
+
+export default Domainverification;
